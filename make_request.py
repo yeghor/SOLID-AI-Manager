@@ -19,10 +19,10 @@ class DirectModelRequester(RequestInterface):
             "gemini": self._make_gemini_request
         }
 
-    def make_request(self):
+    def make_request(self, query_text):
         for model_name, request_method in self._model_map.items():
             if self.model == model_name:
-                return   request_method()
+                return request_method(quert_text=query_text)
         raise ValueError("This model is not implemented yet")
 
     def _make_gemini_request(self, query_text):

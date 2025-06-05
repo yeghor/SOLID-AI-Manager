@@ -1,45 +1,45 @@
 from abc import ABC, abstractmethod
 
-class extractHTTP(ABC):
+class ModelExtractor(ABC):
     @abstractmethod
-    def extract_text(response, model: str):
-        """Extracting text field"""
+    def extract_text(resposne):
+        """Extracting text field with prefered model logic"""
 
     @abstractmethod
-    def extract_http_response(response, model: str):
-        """Extracting full HTTP response"""
+    def extract_http_response(response):
+        """Extracting HTTP response with prefered model logic"""
 
-class GeminiExtractorHTTP(extractHTTP):
-    def __init__(self, model):
-        self.model = model
-
-    def extract_text(self, response):
-        if self.model == "gemini":
-            return response.text
-        else:
-            raise Exception("This model is not implemented yet")
+class GeminiExtractor(ModelExtractor):
+    def extract_text(response):
+        return response.text
     
     def extract_http_response(response):
-        return response.json()
+        return response.json()  
 
 # =========================================
 
-class ExtractResponseInterface(ABC):
+class ResponseExtractorInterface(ABC):
     @abstractmethod
-    def get_response_text(self):
-        """Getting response text"""
-    
+    def extract_text(self, response):
+        """Calling protected method to choose right method to call to extract text"""
+
     @abstractmethod
-    def get_full_response(self):
-        """Getting full HTTP Response"""
+    def extract_http_response(self, response):
+        """Calling protected method to choose right method to call to extract HTTP response"""
 
-class ExtractGeminiResponse(ExtractResponseInterface):
-    def __init__(self, model: str):
-        self.model: str = model
-        self._extractHTTP: extractHTTP = GeminiExtractorHTTP(model)
+class ResponseExtractor(ResponseExtractorInterface):
+    def __init__(self, model, model_map: dict[str, ModelExtractor]):
+        self.model = model
+        self._model_map = model_map
 
-    def get_response_text(self, response):
-        return self._extractHTTP.extract_text(response, self.model)
-    
-    def get_full_response(self, response):
-        return self._extractHTTP.extract_http_response(response)
+    def extract_text(self, response):
+        extractor: ModelExtractor = self._model_map.get(self.model) 
+        if not extractor:
+            raise ValueError("This model is not implemented")
+        return extractor.extract_text(response)
+
+    def extract_http_response(self, response):
+        extractor: ModelExtractor = self._model_map.get(self.model) 
+        if not extractor:
+            raise ValueError("This model is not implemented")
+        return extractor.extract_http_response(response)
