@@ -30,13 +30,14 @@ class RequestService(ABC):
         """Make request to model through RequestInterface class"""
 
 class RequestMakerServicre(RequestService):
-    def __init__(self, model: str, model_map: dict[RequestMakerInterface] = { "gemini": ModelInterface }):
+    def __init__(self, model: str, model_map: dict[RequestMakerInterface] = { "gemini": GeminiRequestMaker }):
         self.model: str = model
         self._api_key: str = get_dotenv_variable_or_exception(model)
         self._model_map = model_map
 
     def make_request(self, query_text: str):
-        request_maker: ModelInterface | None = self._model_map.get(self.model)
+        request_maker: RequestMakerInterface | None = self._model_map.get(self.model)
+        request_maker = request_maker(model=self.model)
         if not request_maker:
             raise ValueError("This model is not implemented yet")
         

@@ -35,7 +35,8 @@ class ResponseExtractorService(ExtractorService):
         self._model_map = model_map
 
     def extract_text(self, response):
-        extractor: ModelExtractorInterface | None = self._model_map.get(self.model) 
+        extractor: ModelExtractorInterface | None = self._model_map.get(self.model)
+        extractor = extractor()
         if not extractor:
             raise ValueError("This model is not implemented")
         return extractor.extract_text(response)

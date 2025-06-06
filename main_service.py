@@ -16,4 +16,3 @@ class MainAiService(MainAiInterface):
     def query(self, prompt: str) -> str:
         response = self.request_maker.make_request(query_text=prompt)
         return self.extractor.extract_text(response=response)
-    
