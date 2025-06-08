@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from base_interface import ModelInterface
 from google.genai.types import GenerateContentResponse
+from openai.types.chat import ChatCompletion
 
 class ModelExtractorInterface(ModelInterface):
     @abstractmethod
@@ -12,11 +13,18 @@ class ModelExtractorInterface(ModelInterface):
         """Extracting HTTP response with prefered model logic"""
 
 class GeminiExtractor(ModelExtractorInterface):
-    def extract_text(self, response: GenerateContentResponse):
+    def extract_text(self, response: GenerateContentResponse) -> str:
         return response.text
     
-    async def extract_http_response(self, response):
-        return await response.json()  
+    async def extract_http_response(self, response: GenerateContentResponse) -> str:
+        return await response.model_dump_json()  
+
+class DeepSeekExtractor(ModelExtractorInterface):
+    def extract_text(self, response: ChatCompletion) -> str:
+        return response.choices[0].message.content
+
+    def extract_http_response(self, response: ChatCompletion) -> str:
+        return response.model_dump_json()
 
 # =========================================
 
@@ -30,7 +38,7 @@ class ExtractorService(ABC):
         """Calling protected method to choose right method to call to extract HTTP response"""
 
 class ResponseExtractorService(ExtractorService):
-    def __init__(self, model, model_map: dict[str, ModelExtractorInterface] = {"gemini": GeminiExtractor}):
+    def __init__(self, model, model_map: dict[str, ModelExtractorInterface] = { "gemini": GeminiExtractor, "deepseek": DeepSeekExtractor }):
         self.model = model
         self._model_map = model_map
 
