@@ -9,24 +9,28 @@ class ModelExtractorInterface(ModelInterface):
         """Extracting text field with prefered model logic"""
 
     @abstractmethod
-    async def extract_http_response(self, response):
+    async def extract_json_from_response(self, response):
         """Extracting HTTP response with prefered model logic"""
 
 class GeminiExtractor(ModelExtractorInterface):
     def extract_text(self, response: GenerateContentResponse) -> str:
         return response.text
     
-    async def extract_http_response(self, response: GenerateContentResponse) -> str:
-        return await response.model_dump_json()  
+    async def extract_json_from_response(self, response: GenerateContentResponse) -> str:
+        try:
+            return await response.model_dump_json()  
+        except Exception as e:
+            raise Exception(f"Error while extracting json data: {e}")
 
 class DeepSeekExtractor(ModelExtractorInterface):
     def extract_text(self, response: ChatCompletion) -> str:
         return response.choices[0].message.content
 
-    def extract_http_response(self, response: ChatCompletion) -> str:
-        return response.model_dump_json()
-
-# =========================================
+    def extract_json_from_response(self, response: ChatCompletion) -> str:
+        try:
+            return response.model_dump_json()
+        except Exception as e:
+            raise Exception(f"Error while extracting json data: {e}")
 
 class ExtractorService(ABC):
     @abstractmethod
@@ -53,4 +57,4 @@ class ResponseExtractorService(ExtractorService):
         extractor: ModelExtractorInterface = self._model_map.get(self.model) 
         if not extractor:
             raise ValueError("This model is not implemented")
-        return extractor.extract_http_response(response)
+        return extractor.extract_json_from_response(response)
