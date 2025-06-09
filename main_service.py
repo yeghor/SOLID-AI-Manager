@@ -27,4 +27,4 @@ class MainAiService(MainAiInterface):
 
 service = MainAiService("deepseek")
 
-print(service.chat_message("Hello!"))
+print(service.chat_message("What was my first request in this chat?"))

@@ -15,11 +15,12 @@ class RequestMakerInterface(ModelInterface):
     def make_request(self, query_text):
         """Direct logic of making request to diferent types of models"""
 
+class ChatCapableRequestMaker(RequestMakerInterface):
     @abstractmethod
     def send_message_chat(self, chat_message):
         """Send message with chat history track"""
 
-class GeminiRequestMaker(RequestMakerInterface):
+class GeminiRequestMaker(ChatCapableRequestMaker):
     def __init__(self, model,  specific_model_name: str = "gemini-2.0-flash"):
         self._client: genai.Client = genai.Client(api_key=get_dotenv_api_key_or_exception(key=model))
         self._chat = self._client.chats.create(model=specific_model_name)
@@ -65,16 +66,13 @@ class DeepSeekRequestMaker(RequestMakerInterface):
                 raise Exception(f"Error while making request: {e.message}")
             raise e
 
-    def send_message_chat(self, query_text):
-        raise Exception("This model don't supports chat messages")
-
 class RequestService(ABC):
     @abstractmethod
     def make_request(self, query_text: str):
         """Make request to model through RequestInterface class"""
         
     @abstractmethod
-    def get_request_maker(self) -> RequestMakerInterface:
+    def _get_request_maker(self) -> RequestMakerInterface:
         """Getting request maker interface by model map and name"""    
 
     @abstractmethod
@@ -86,14 +84,16 @@ class RequestMakerService(RequestService):
         self.model: str = model
         self._model_map = model_map
 
-    def get_request_maker(self) -> RequestMakerInterface:
+    def _get_request_maker(self) -> RequestMakerInterface:
         request_maker: RequestMakerInterface = get_interface_by_map(model=self.model, model_map=self._model_map)
         return request_maker(model=self.model)       
 
     def make_request(self, query_text: str):
-        request_maker = self.get_request_maker()
+        request_maker = self._get_request_maker()
         return request_maker.make_request(query_text)
 
     def send_chat_message(self, query_text):
-        request_maker: RequestMakerInterface = self.get_request_maker()
+        request_maker: RequestMakerInterface = self._get_request_maker()
+        if not isinstance(request_maker, ChatCapableRequestMaker):
+            raise Exception(f"Model - {self.model.title()} doesn't support chat interactions")
         return request_maker.send_message_chat(query_text=query_text)
