@@ -84,13 +84,13 @@ class RequestMakerService(RequestService):
         self.model: str = model
         self._model_map = model_map
 
-    def _get_request_maker(self) -> RequestMakerInterface:
-        request_maker: RequestMakerInterface = get_interface_by_map(model=self.model, model_map=self._model_map)
-        return request_maker(model=self.model)       
-
     def make_request(self, query_text: str):
         request_maker = self._get_request_maker()
         return request_maker.make_request(query_text)
+
+    def _get_request_maker(self) -> RequestMakerInterface:
+        request_maker: RequestMakerInterface = get_interface_by_map(model=self.model, model_map=self._model_map)
+        return request_maker(model=self.model)       
 
     def send_chat_message(self, query_text):
         request_maker: RequestMakerInterface = self._get_request_maker()

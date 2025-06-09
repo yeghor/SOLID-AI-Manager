@@ -14,17 +14,19 @@ class MainAiInterface(ABC):
 class MainAiService(MainAiInterface):
     def __init__(self, model):
         self.model = model
-        self.request_maker: RequestService = RequestMakerService(model=model)
-        self.extractor: ExtractorService = ResponseExtractorService(model=model)
+        self._request_maker: RequestService = RequestMakerService(model=model)
+        self._extractor: ExtractorService = ResponseExtractorService(model=model)
     
-    def query(self, prompt: str) -> str:
-        response = self.request_maker(query_text=prompt)
-        return self.extractor.extract_text(response=response)
+    def query(self, prompt: str, json:bool=False) -> str:
+        response = self._request_maker.make_request(query_text=prompt)
+        if json:
+            return self._extractor.extract_json_response(response=response)
+        return self._extractor.extract_text(response=response)
     
     def chat_message(self, prompt):
-        response = self.request_maker.send_chat_message(query_text=prompt)
-        return self.extractor.extract_text(response)
+        response = self._request_maker.send_chat_message(query_text=prompt)
+        return self._extractor.extract_text(response)
 
-service = MainAiService("deepseek")
+service = MainAiService("gemini")
 
-print(service.chat_message("What was my first request in this chat?"))
+print(service.query("How much os 2 times 2?", json=True))
