@@ -1,2 +1,2 @@
 # SOLID-AI-Manager
-Interace to work with AI models using SOLID principles
+Interface to work with AI models using SOLID principles
