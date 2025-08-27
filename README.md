@@ -1,5 +1,5 @@
 # SOLID-AI-Manager
-Interface to work with AI models using **SOLID** principles
+Simple interface to work with AI models using **SOLID** principles
 
 This interface presents service to work with various AI models: from gemini to chatGPT.
 This service is following the **five SOLID principles**. It has secondary services:
@@ -15,6 +15,8 @@ git clone https://github.com/yeghor/SOLID-AI-Manager.git
 ```
 ### 2. Set up credentials
 Create `.env` file and fill with your API keys:
+_Caution! Make sure that your api key billing plan supports the usage you intend_
+_Advice: Gemini basic API usage is free (08.27.2025)_
 ```
 # API_KEY_{MODELTYPE}
 API_KEY_GEMINI = "YourAPIKey"
